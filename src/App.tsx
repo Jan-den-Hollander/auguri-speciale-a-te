@@ -119,7 +119,7 @@ const T = {
   fallback:   { nl: '✦ De spiegel spreekt uit zijn geheugen ✦', it: '✦ Lo specchio parla dalla sua memoria ✦' },
   noKey:      { nl: 'Geen API-sleutel ingesteld 🔑',   it: 'Nessuna chiave API impostata 🔑' },
   keyTitle:   { nl: '🔑 API-sleutel',                  it: '🔑 Chiave API' },
-  keyHint:    { nl: 'Gemini API-sleutel (Google AI Studio).\nAlleen op dit toestel opgeslagen.', it: 'Chiave API Gemini (Google AI Studio).\nSalvata solo su questo dispositivo.' },
+  keyHint:    { nl: 'Gemini API-sleutel (Google AI Studio).\nAlleen op dit toestel opgeslagen.\n👉 Gratis aanmaken:\naistudio.google.com/app/apikey', it: 'Chiave API Gemini (Google AI Studio).\nSalvata solo su questo dispositivo.\n👉 Crea gratis:\naistudio.google.com/app/apikey' },
   keyCancel:  { nl: 'Annuleren',                       it: 'Annulla' },
   keySave:    { nl: 'Opslaan',                         it: 'Salva' },
   keySet:     { nl: 'API-sleutel ✓',                   it: 'Chiave API ✓' },
@@ -131,12 +131,15 @@ const T = {
   noName:     { nl: 'Vertel me eerst je naam! 🌟',      it: 'Prima dimmi come ti chiami! 🌟' },
   noFeest:    { nl: 'Kies of omschrijf wat je viert! 🎊', it: 'Scegli o descrivi cosa festeggi! 🎊' },
   chooseFeest:{ nl: 'Kies een feest:',                  it: 'Scegli una festa:' },
-  langSwitch: { nl: '🇮🇹 Italiano',                    it: '🇳🇱 Nederlands' },
+  langSwitch: { nl: '🇮🇹',                              it: '🇳🇱' },
 };
 
 // ── ENV key ───────────────────────────────────────────────────────────────
 const ENV_KEY: string =
   (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_KEY) || '';
+// Eigen gratis key aanmaken: https://aistudio.google.com/app/apikey
+// Vul hier je key in als je geen Vercel env gebruikt:
+const DEPLOY_KEY = '';
 
 // ── Retry helper ──────────────────────────────────────────────────────────
 const sleep = (ms: number): Promise<void> => new Promise(res => setTimeout(res, ms));
@@ -246,7 +249,7 @@ Rispondi SOLO come JSON senza markdown:
   }
 };
 
-// ── Ornate Frame — 🍾🍻🥂 wisselend ipv 📚 ───────────────────────────────
+// ── Ornate Frame — 🍾🥳🥂 wisselend ipv 📚 ───────────────────────────────
 function ptOnEllipse(
   cx: number, cy: number, rx: number, ry: number, angleDeg: number
 ): [number, number] {
@@ -258,8 +261,8 @@ function OrnateFrame({ W = 270, H = 330 }: OrnateFrameProps) {
   const cx = W / 2, cy = H / 2;
   const rx = cx - 10, ry = cy - 10;
 
-  // 🍾🍻🥂 wisselen ipv 📚
-  const feestEmojis = ['🍾', '🍻', '🥂'];
+  // 🍾🥳🥂 wisselen ipv 📚
+  const feestEmojis = ['🍾', '🥳', '🥂'];
   const kransPunten: KransPunt[] = [
     { a:  0, emoji: feestEmojis[0], fs:18, off: 12, rot:  0 },
     { a: 14, emoji:'🍀', fs:15, off:  4, rot: 20 },
@@ -352,7 +355,7 @@ function OrnateFrame({ W = 270, H = 330 }: OrnateFrameProps) {
       })}
 
       {/* Feest-emoji's en bloemen */}
-      {kransPunten.filter(p => ['🍾','🍻','🥂','🌸'].includes(p.emoji)).map((p, i) => {
+      {kransPunten.filter(p => ['🍾','🥳','🥂','🌸'].includes(p.emoji)).map((p, i) => {
         const [px, py] = ptOnEllipse(cx, cy, rx + p.off, ry + p.off, p.a);
         return (
           <text key={`f${i}`} x={px} y={py} fontSize={p.fs}
@@ -501,9 +504,10 @@ function SetupOverlay({
       {isFeest && (
         <>
           <p style={{ fontSize:10, color:'rgba(245,230,66,0.42)', margin:0 }}>{T.chooseFeest[lang]}</p>
+          <div style={{ position:'relative', width:'96%' }}>
           <div style={{
             display:'grid', gridTemplateColumns:'1fr 1fr', gap:5,
-            width:'96%', maxHeight:160, overflowY:'auto',
+            width:'100%', maxHeight:160, overflowY:'auto',
           }}>
             {feestLijst.map(f => (
               <button key={f.key} onClick={() => { setFeest(f.key); }}
@@ -522,6 +526,13 @@ function SetupOverlay({
                 {f.label}
               </button>
             ))}
+          </div>
+          {/* Pijltje: scroll-hint */}
+          <div style={{
+            textAlign:'center', fontSize:14, color:'rgba(245,230,66,0.45)',
+            marginTop:2, animation:'bounce 1.4s ease-in-out infinite',
+            pointerEvents:'none',
+          }}>▾</div>
           </div>
           {showCustom && (
             <input
@@ -742,8 +753,9 @@ export default function SpecchioAuguri() {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [apiKey, setApiKey]           = useState<string>(() => {
     if (ENV_KEY) return ENV_KEY;
-    try { return localStorage.getItem('specchio_auguri_gemini_key') || ''; } catch { return ''; }
+    try { return localStorage.getItem('specchio_auguri_gemini_key') || DEPLOY_KEY; } catch { return DEPLOY_KEY; }
   });
+  const [cameraOk, setCameraOk]        = useState(false);
 
   const videoRef  = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -753,10 +765,17 @@ export default function SpecchioAuguri() {
   useEffect(() => {
     (async () => {
       try {
+        if (!navigator.mediaDevices?.getUserMedia) return;
         const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
         streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      } catch { /* geen camera */ }
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => setCameraOk(true);
+        }
+      } catch (e) {
+        console.warn('Camera niet beschikbaar:', e);
+        setCameraOk(false);
+      }
     })();
     return () => streamRef.current?.getTracks().forEach(t => t.stop());
   }, []);
@@ -976,8 +995,9 @@ export default function SpecchioAuguri() {
           handleReset();
         }} style={{
           background:'rgba(245,230,66,0.09)', border:'1px solid rgba(245,230,66,0.25)',
-          borderRadius:16, padding:'5px 12px', fontSize:11, color:'rgba(245,230,66,0.7)',
-          cursor:'pointer', fontFamily:"'IM Fell English', serif", letterSpacing:'0.05em',
+          borderRadius:'50%', width:36, height:36, fontSize:20,
+          cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
+          padding:0,
         }}>
           {T.langSwitch[lang]}
         </button>
@@ -1008,6 +1028,19 @@ export default function SpecchioAuguri() {
         <OrnateFrame W={270} H={330}/>
         <div style={S.mirrorGlass}>
           <video ref={videoRef} autoPlay playsInline muted style={S.video}/>
+          {!cameraOk && (
+            <div style={{
+              position:'absolute', inset:0, display:'flex',
+              alignItems:'center', justifyContent:'center',
+              background:'radial-gradient(ellipse at 50% 40%,#12200a,#060d04)',
+              flexDirection:'column', gap:4, pointerEvents:'none',
+            }}>
+              <span style={{ fontSize:32, opacity:0.35 }}>🪞</span>
+              <span style={{ fontSize:9, color:'rgba(245,230,66,0.22)', fontStyle:'italic' }}>
+                {lang === 'nl' ? 'camera niet beschikbaar' : 'fotocamera non disponibile'}
+              </span>
+            </div>
+          )}
 
           {isDone && !isThinking && <MirrorOverlay />}
 
@@ -1110,7 +1143,24 @@ export default function SpecchioAuguri() {
             onClick={(e) => e.target === e.currentTarget && setShowKeyModal(false)}>
             <div style={S.modalBox}>
               <h2 style={S.modalTitle}>{T.keyTitle[lang]}</h2>
-              <p style={S.modalHint}>{T.keyHint[lang]}</p>
+              <div style={S.modalHint}>
+                <p style={{ margin:'0 0 6px' }}>
+                  {lang === 'nl'
+                    ? 'Gemini API-sleutel (Google AI Studio). Alleen op dit toestel opgeslagen.'
+                    : 'Chiave API Gemini (Google AI Studio). Salvata solo su questo dispositivo.'}
+                </p>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color:'#f5e642', fontSize:12, textDecoration:'underline',
+                    display:'block', textAlign:'center', marginTop:4,
+                  }}
+                >
+                  👉 {lang === 'nl' ? 'Gratis key aanmaken' : 'Crea chiave gratis'}
+                </a>
+              </div>
               <input type="password" id="keyInp" defaultValue={apiKey}
                 placeholder="AIza…" style={S.modalInput}/>
               <div style={{ display:'flex', gap:10, marginTop:16 }}>
@@ -1278,7 +1328,7 @@ const S: Record<string, any> = {
   } as CSSProperties,
   modalHint: {
     margin:'0 0 14px', fontSize:11, lineHeight:1.6,
-    color:'rgba(245,230,66,0.4)', textAlign:'center' as const, whiteSpace:'pre-line' as const,
+    color:'rgba(245,230,66,0.4)', textAlign:'center' as const,
   } as CSSProperties,
   modalInput: {
     width:'100%', background:'rgba(0,0,0,0.4)',
