@@ -1,10 +1,10 @@
 /**
- * Specchio degli Auguri — Felicitatiespegel / Specchio delle Congratulazioni
+ * Specchio degli Auguri — Felicitatiespiegel / Specchio delle Congratulazioni
  * Stile Efteling / Anton Piek  ·  v1.0-nl-it
  * Gebaseerd op Specchio del Laureato v1.0-it
  <!--
 ================================================================================
-  Specchio degli Auguri — Felicitatiespegel
+  Specchio degli Auguri — Felicitatiespiegel
   Versione 1.0-nl-it — 2025
 ================================================================================
   Copyright (c) 2025 Jan den Hollander
