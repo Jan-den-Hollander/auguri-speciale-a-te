@@ -101,7 +101,7 @@ const FEESTEN: Record<Lang, { key: string; label: string }[]> = {
 const T = {
   title:      { nl: '✦ Felicitatiespiegel ✦',         it: '✦ Specchio degli Auguri ✦' },
   subtitle:   { nl: 'De spreukenspiegel voor elk feest…', it: 'Lo specchio magico per ogni festa…' },
-  stepName:   { nl: 'Wie vieren we vandaag?',         it: 'Chi festeggiamo oggi?' },
+  stepName:   { nl: 'Wat vieren we vandaag?',         it: 'Chi festeggiamo oggi?' },
   stepFeest:  { nl: 'Wat vieren we?',                 it: 'Cosa festeggiamo?' },
   stepDate:   { nl: 'Op welke datum?',                it: 'In quale data?' },
   namePH:     { nl: 'Schrijf je naam…',               it: 'Scrivi il tuo nome…' },
