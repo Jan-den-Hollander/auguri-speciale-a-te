@@ -785,7 +785,7 @@ export default function SpecchioAuguri() {
     let cancelled = false;
     const vragen: Record<StepKey, string> = {
       name:  lang === 'nl'
-        ? 'Welkom bij de Felicitatiespiegel. Wie vieren we vandaag?'
+        ? 'Welkom bij de Felicitatiespiegel. Wat vieren we vandaag?'
         : 'Benvenuto allo Specchio degli Auguri. Chi festeggiamo oggi?',
       feest: lang === 'nl'
         ? `Hallo ${name || ''}! Wat vieren we?`
