@@ -1251,12 +1251,14 @@ function CopyrightFooter() {
             </p>
             <p style={{ marginBottom: 4 }}>
               📧 <a href="mailto:jandenhollander@duck.com" style={{ color: '#f5e642' }}>jandenhollander@duck.com</a>
-            </p>
-              <p style="margin-top:4px;margin-bottom:0">
-      🔗 Alle apps / All apps:
-      <a href="https://etalage-beta.vercel.app/"
-         target="_blank" rel="noopener" style="color:#7eb8f7">etalage-beta.vercel.app</a>
-    </p>
+            <p style={{ marginTop: 4, marginBottom: 0 }}>
+  🔗 Alle apps / All apps:{' '}
+  <a href="https://etalage-beta.vercel.app/"
+     target="_blank" rel="noopener noreferrer"
+     style={{ color: '#7eb8f7' }}>
+    etalage-beta.vercel.app
+  </a>
+</p>
             <button
               onClick={() => setOpen(false)}
               style={{
